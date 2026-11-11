@@ -1,36 +1,53 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Mis gastos
 
-## Getting Started
+Gestor de gastos personal, pensado primero para el celular. Registra gastos e ingresos y muestra
+cuánto se gasta por semana y por mes, y en qué categorías. Moneda: pesos argentinos (ARS).
+Zona horaria: America/Argentina/Cordoba.
 
-First, run the development server:
+El documento de referencia del proyecto (stack, reglas, diseño y base de datos) es [`CLAUDE.md`](./CLAUDE.md).
+
+## Stack
+
+Next.js (App Router) · TypeScript estricto · Tailwind CSS + shadcn/ui · Recharts ·
+Supabase (Postgres + Auth) · React Hook Form + Zod · date-fns · Vitest · Vercel.
+
+## Puesta en marcha
+
+1. Seguir [`supabase/SETUP.md`](./supabase/SETUP.md): base de datos, autenticación y variables de entorno.
+2. Copiar `.env.example` a `.env.local` y completar `SUPABASE_URL` y `SUPABASE_PUBLISHABLE_KEY`.
+3. Instalar y levantar:
 
 ```bash
+npm install
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+La app queda en [http://localhost:3000](http://localhost:3000).
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+## Scripts
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+| Comando | Qué hace |
+| --- | --- |
+| `npm run dev` | Servidor de desarrollo |
+| `npm run build` | Build de producción |
+| `npm run lint` | ESLint |
+| `npm run test` | Tests (Vitest): dinero, fechas, totales, presupuestos, CSV, etc. |
 
-## Learn More
+## Estructura
 
-To learn more about Next.js, take a look at the following resources:
+```
+src/app/(auth)/        login y registro (públicas)
+src/app/(app)/         pantallas privadas: inicio, gastos, resumen, categorías,
+                       presupuesto, ingresos, gastos fijos, saldo con el hermano, más
+src/app/actions/       Server Actions (mutaciones, siempre validadas con Zod)
+src/app/auth/callback  destino del link del email de confirmación
+src/lib/               dinero, fechas, cálculos, validadores, consultas y clientes de Supabase
+supabase/migrations/   migraciones SQL numeradas
+supabase/audit/        script de auditoría de seguridad (RLS)
+```
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+## Seguridad
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
-
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+- Toda tabla tiene `user_id` y seguridad por fila (RLS): cada usuario ve solo sus datos.
+- Solo se usa la Publishable key. **Nunca** la Secret key / `service_role`.
+- Las variables de entorno se leen solo en el servidor.

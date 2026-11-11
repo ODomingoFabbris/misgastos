@@ -1,5 +1,6 @@
 "use server";
 
+import { headers } from "next/headers";
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import {
@@ -48,8 +49,15 @@ export async function signup(values: SignupValues): Promise<AuthActionResult> {
     return { error: parsed.error.issues[0]?.message ?? "Datos inválidos." };
   }
 
+  // El link del email vuelve al mismo sitio desde el que se registró (local o producción).
+  // Supabase solo acepta URLs que estén en su lista de "Redirect URLs".
+  const origin = (await headers()).get("origin");
+
   const supabase = await createClient();
-  const { data, error } = await supabase.auth.signUp(parsed.data);
+  const { data, error } = await supabase.auth.signUp({
+    ...parsed.data,
+    options: origin ? { emailRedirectTo: `${origin}/auth/callback` } : undefined,
+  });
   if (error) return { error: translateAuthError(error) };
 
   // Con la confirmación de email activa no hay sesión hasta confirmar.

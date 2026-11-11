@@ -2,11 +2,17 @@ import { createServerClient } from "@supabase/ssr";
 import { NextResponse, type NextRequest } from "next/server";
 import { getSupabaseEnv } from "./env";
 
-const PUBLIC_PATHS = ["/login", "/registro"];
+/** Pantallas de acceso: si ya hay sesión, se redirige al inicio. */
+const AUTH_PAGES = ["/login", "/registro"];
+/** Rutas accesibles sin sesión. /auth/callback recibe el link del email de confirmación. */
+const PUBLIC_PATHS = [...AUTH_PAGES, "/auth/callback"];
 
-function isPublicPath(pathname: string) {
-  return PUBLIC_PATHS.some((path) => pathname === path || pathname.startsWith(`${path}/`));
+function matches(pathname: string, paths: string[]) {
+  return paths.some((path) => pathname === path || pathname.startsWith(`${path}/`));
 }
+
+const isPublicPath = (pathname: string) => matches(pathname, PUBLIC_PATHS);
+const isAuthPage = (pathname: string) => matches(pathname, AUTH_PAGES);
 
 /**
  * Refresca la sesión de Supabase en cada request y hace la verificación
@@ -43,7 +49,7 @@ export async function updateSession(request: NextRequest) {
     return redirectTo(request, "/login", response);
   }
 
-  if (isLoggedIn && isPublicPath(pathname)) {
+  if (isLoggedIn && isAuthPage(pathname)) {
     return redirectTo(request, "/", response);
   }
 
