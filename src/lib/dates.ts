@@ -117,3 +117,56 @@ export function weeksOfMonth(date: string): WeekOfMonth[] {
 export function daysInRange(range: DateRange): number {
   return diffInDays(range.start, range.end) + 1;
 }
+
+/** Verdadero si el texto es una fecha calendario real con formato yyyy-MM-dd. */
+export function isValidDate(date: string): boolean {
+  try {
+    toUtc(date);
+    return true;
+  } catch {
+    return false;
+  }
+}
+
+const dayLabelFormatter = new Intl.DateTimeFormat("es-AR", {
+  weekday: "long",
+  day: "numeric",
+  month: "long",
+  timeZone: "UTC",
+});
+
+const shortDateFormatter = new Intl.DateTimeFormat("es-AR", { day: "numeric", month: "short", timeZone: "UTC" });
+const monthFormatter = new Intl.DateTimeFormat("es-AR", { month: "long", year: "numeric", timeZone: "UTC" });
+const weekdayFormatter = new Intl.DateTimeFormat("es-AR", { weekday: "narrow", timeZone: "UTC" });
+
+/** "9 nov – 15 nov". */
+export function formatRange(range: DateRange): string {
+  const clean = (date: string) => shortDateFormatter.format(toUtc(date)).replace(".", "");
+  return range.start === range.end ? clean(range.start) : `${clean(range.start)} – ${clean(range.end)}`;
+}
+
+/** "Noviembre 2026". */
+export function formatMonthLabel(date: string): string {
+  const label = monthFormatter.format(toUtc(date)).replace(" de ", " ");
+  return label.charAt(0).toUpperCase() + label.slice(1);
+}
+
+/** Inicial del día de la semana ("L", "M", …). */
+export function formatWeekdayInitial(date: string): string {
+  return weekdayFormatter.format(toUtc(date)).toUpperCase();
+}
+
+/** Número de día del mes como texto. */
+export function dayOfMonth(date: string): string {
+  return String(Number(date.slice(8, 10)));
+}
+
+/** Título de un día en la lista: "Hoy", "Ayer" o "Miércoles, 11 de noviembre". */
+export function formatDayLabel(date: string, today: string): string {
+  if (date === today) return "Hoy";
+  if (date === addDays(today, -1)) return "Ayer";
+  const label = dayLabelFormatter.format(toUtc(date));
+  const capitalized = label.charAt(0).toUpperCase() + label.slice(1);
+  const year = date.slice(0, 4);
+  return year === today.slice(0, 4) ? capitalized : `${capitalized} de ${year}`;
+}

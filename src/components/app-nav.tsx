@@ -2,10 +2,10 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { BarChart3, Home, Menu, Plus, Receipt, type LucideIcon } from "lucide-react";
+import { BarChart3, Home, Menu, Plus, Receipt } from "lucide-react";
+import { useExpenseSheet } from "@/components/expense-sheet-context";
+import { MORE_ITEMS, type NavItem } from "@/components/nav-items";
 import { cn } from "@/lib/utils";
-
-type NavItem = { href: string; label: string; icon: LucideIcon };
 
 const ITEMS: NavItem[] = [
   { href: "/", label: "Inicio", icon: Home },
@@ -18,16 +18,16 @@ function isActive(pathname: string, href: string) {
   return href === "/" ? pathname === "/" : pathname === href || pathname.startsWith(`${href}/`);
 }
 
-/** Botón central "+". La hoja de agregar gasto llega en el Paso 2. */
+/** Botón central "+": abre la hoja de agregar gasto. */
 function AddExpenseButton({ className }: { className?: string }) {
+  const { openNew } = useExpenseSheet();
   return (
     <button
       type="button"
-      disabled
-      aria-label="Agregar gasto (disponible pronto)"
-      title="Agregar gasto (disponible pronto)"
+      onClick={openNew}
+      aria-label="Agregar gasto"
       className={cn(
-        "flex size-12 items-center justify-center rounded-full bg-primary text-primary-foreground disabled:opacity-60",
+        "flex size-12 items-center justify-center rounded-full bg-primary text-primary-foreground transition-transform active:scale-95",
         className,
       )}
     >
@@ -107,6 +107,26 @@ export function SideNav({ footer }: { footer?: React.ReactNode }) {
         <div className="mt-2 flex items-center gap-3 px-3 text-sm text-muted-foreground">
           <AddExpenseButton className="size-10" />
           Agregar gasto
+        </div>
+        <div className="mt-2 flex flex-col gap-1">
+          {MORE_ITEMS.map((item) => {
+            const Icon = item.icon;
+            const active = isActive(pathname, item.href);
+            return (
+              <Link
+                key={item.href}
+                href={item.href}
+                aria-current={active ? "page" : undefined}
+                className={cn(
+                  "flex min-h-11 items-center gap-3 rounded-lg px-3 text-sm",
+                  active ? "bg-surface text-foreground" : "text-muted-foreground hover:bg-surface",
+                )}
+              >
+                <Icon className="size-5" aria-hidden />
+                {item.label}
+              </Link>
+            );
+          })}
         </div>
       </nav>
       {footer}

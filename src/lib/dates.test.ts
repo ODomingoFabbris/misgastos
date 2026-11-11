@@ -2,7 +2,13 @@ import { describe, expect, it } from "vitest";
 import {
   addDays,
   daysInRange,
+  dayOfMonth,
   diffInDays,
+  formatDayLabel,
+  formatMonthLabel,
+  formatRange,
+  formatWeekdayInitial,
+  isValidDate,
   monthRange,
   previousMonthRange,
   previousWeekRange,
@@ -108,6 +114,45 @@ describe("weeksOfMonth", () => {
     const [first] = weeksOfMonth("2026-06-10");
     expect(first.start).toBe("2026-06-01");
     expect(first.weekStart).toBe("2026-06-01");
+  });
+});
+
+describe("formatDayLabel / isValidDate", () => {
+  it("usa Hoy y Ayer", () => {
+    expect(formatDayLabel("2026-11-11", "2026-11-11")).toBe("Hoy");
+    expect(formatDayLabel("2026-11-10", "2026-11-11")).toBe("Ayer");
+  });
+
+  it("muestra el día de la semana en español", () => {
+    expect(formatDayLabel("2026-11-05", "2026-11-11")).toBe("Jueves, 5 de noviembre");
+  });
+
+  it("agrega el año si no es el actual", () => {
+    expect(formatDayLabel("2025-12-31", "2026-01-02")).toContain("2025");
+  });
+
+  it("valida fechas calendario", () => {
+    expect(isValidDate("2028-02-29")).toBe(true);
+    expect(isValidDate("2026-02-29")).toBe(false);
+    expect(isValidDate("11/11/2026")).toBe(false);
+  });
+});
+
+describe("formatos de período", () => {
+  it("formatRange", () => {
+    expect(formatRange({ start: "2026-11-09", end: "2026-11-15" })).toBe("9 nov – 15 nov");
+    expect(formatRange({ start: "2026-11-09", end: "2026-11-09" })).toBe("9 nov");
+  });
+
+  it("formatMonthLabel", () => {
+    expect(formatMonthLabel("2026-11-10")).toBe("Noviembre 2026");
+  });
+
+  it("formatWeekdayInitial y dayOfMonth", () => {
+    expect(formatWeekdayInitial("2026-11-09")).toBe("L"); // lunes
+    expect(formatWeekdayInitial("2026-11-15")).toBe("D"); // domingo
+    expect(dayOfMonth("2026-11-05")).toBe("5");
+    expect(dayOfMonth("2026-11-25")).toBe("25");
   });
 });
 

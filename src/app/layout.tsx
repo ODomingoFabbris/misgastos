@@ -10,6 +10,8 @@ const inter = Inter({
 export const metadata: Metadata = {
   title: { default: "Mis gastos", template: "%s · Mis gastos" },
   description: "Gestor de gastos personal",
+  icons: { icon: "/icons/icon-192.png", apple: "/icons/apple-touch-icon.png" },
+  appleWebApp: { capable: true, title: "Mis gastos", statusBarStyle: "black-translucent" },
 };
 
 export const viewport: Viewport = {

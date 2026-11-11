@@ -1,0 +1,118 @@
+ESTADO DEL PROYECTO - GESTOR DE GASTOS PERSONAL
+================================================
+
+Última actualización: 11/11/2026
+Los pasos 1 a 5 están escritos en el código. Lint, tests (101) y build pasan sin errores.
+Lo que NO se pudo probar es el funcionamiento contra tu Supabase real (ver "Lo que falta que hagas vos").
+
+
+LO QUE YA SE HIZO
+-----------------
+
+Paso 1 - Fundaciones, diseño y cuentas
+  - Next.js (App Router) + TypeScript estricto, Tailwind y shadcn/ui, Recharts,
+    React Hook Form + Zod, date-fns y Vitest.
+  - Tema oscuro fijo con los colores del documento (CLAUDE.md), fuente Inter.
+  - Layout móvil con barra inferior y menú lateral en escritorio.
+  - Clientes de Supabase (@supabase/ssr), proxy.ts que refresca la sesión y
+    protege las rutas privadas.
+  - Registro, inicio y cierre de sesión, con errores en español.
+  - money.ts y dates.ts con tests (centavos enteros, semana lunes a domingo,
+    "hoy" siempre en la zona de Córdoba).
+  - La carpeta app/ se movió a src/app/.
+
+Paso 2 - Categorías y gastos
+  - Categorías: crear, renombrar, color, ordenar, archivar y borrar
+    (si tiene gastos: mover los gastos a otra categoría o archivar).
+  - Hoja "Agregar gasto" desde el botón "+" (monto con teclado numérico,
+    categorías como botones de color, fecha en hoy, nota, compartido x2).
+  - Lista de gastos por día, con búsqueda y filtros (categoría y fechas).
+  - Editar y borrar gastos (con confirmación).
+
+Paso 3 - Inicio y Resumen
+  - Inicio: selector Semana/Mes, total, comparación con el período anterior
+    (flecha roja si subió, verde si bajó), promedio diario, torta por categoría,
+    barras por día y últimos gastos.
+  - Opción "Mi parte" / "Lo que pagué" en Inicio y Resumen.
+  - Resumen: una fila por semana del mes con total y categoría principal,
+    más el total mensual, con navegación entre meses.
+
+Paso 4 - Presupuestos e ingresos
+  - Presupuesto mensual: tope total y por categoría, barra verde que pasa a
+    roja al excederse.
+  - "Cuánto puedo gastar por día" (en Presupuesto y en Inicio).
+  - Ingresos (familia, freelance con cliente, otro) con balance del mes.
+
+Paso 5 - Recurrentes, saldo y extras
+  - Gastos fijos que se generan solos una vez por mes (al abrir la app).
+  - Saldo con el hermano, con botón "Saldar" y opción de deshacer.
+  - Recordatorio de peluquería a las 2-3 semanas del último corte.
+  - Exportar gastos a CSV (respeta los filtros activos).
+  - PWA instalable (manifest e íconos).
+
+
+LO QUE FALTA QUE HAGAS VOS
+--------------------------
+
+1) Aplicar la migración 0002 en Supabase  [IMPRESCINDIBLE]
+   - Abrí supabase/migrations/0002_recurring_and_settlements.sql, copiá todo
+     el contenido y ejecutalo en el SQL Editor de Supabase.
+   - Sin esto: los gastos fijos no se generan solos (falla en silencio) y la
+     pantalla "Saldo con mi hermano" da error.
+
+2) Completar las variables de entorno
+   - En .env.local: SUPABASE_URL y SUPABASE_PUBLISHABLE_KEY.
+   - Nunca usar la Secret key / service_role.
+   - En Vercel cargar las mismas dos variables.
+
+3) Probar todo a mano con datos reales (nada se probó contra tu Supabase)
+   - Registro e inicio de sesión.
+   - Crear, editar y borrar un gasto; probar gasto compartido.
+   - Categorías: crear, ordenar, archivar y borrar una que tenga gastos.
+   - Filtros y búsqueda en Gastos.
+   - Inicio y Resumen: que los totales coincidan con lo cargado.
+   - Presupuesto: definir un tope y ver la barra pasar de verde a roja.
+   - Ingresos: cargar uno freelance con cliente y revisar el balance.
+   - Gastos fijos: crear uno con día igual o anterior a hoy, volver a abrir
+     la app y ver que aparece el gasto.
+   - Saldo con el hermano: cargar un gasto compartido, saldar y deshacer.
+   - Exportar CSV y abrirlo en Excel.
+   - Revisar el diseño en el celular (390 px) y en escritorio.
+
+4) Desplegar en Vercel (si todavía no se hizo) y probar la PWA
+   - La instalación en el celular requiere HTTPS (o sea, el sitio ya desplegado).
+   - Probar "Agregar a pantalla de inicio".
+
+5) Guardar el trabajo en Git
+   - Nada de esto está commiteado todavía. Hay que hacer commit y push.
+
+6) Actualizar CLAUDE.md
+   - Marcar los pasos 1 a 5 como terminados y completar el "Historial de
+     decisiones" con los resúmenes entregados en cada paso.
+   - Agregar al repo supabase/migrations/0001_init.sql y supabase/SETUP.md
+     (la carpeta supabase/ hoy solo tiene la 0002).
+
+7) Paso 6 - Pulido y publicación (es lo único que queda del plan)
+   - Revisión a 390 px y accesibilidad.
+   - Revisión de seguridad de las reglas de la base (RLS).
+   - Reactivar la confirmación de email en Supabase.
+   - Configurar la URL final en Supabase (Auth) y en Vercel.
+
+
+DECISIONES Y LÍMITES A TENER EN CUENTA
+--------------------------------------
+
+  - Parte del hermano: si el total tiene centavos impares, tu parte es el piso
+    de la mitad (el centavo sobrante lo absorbe el hermano).
+  - Gastos fijos: solo se generan para el mes en curso (no completan meses
+    pasados). Si borrás uno generado, no se vuelve a crear ese mes. Un fijo
+    que ya generó gastos no se puede borrar: hay que pausarlo.
+  - Recordatorio de peluquería: reconoce la categoría por el nombre
+    ("Peluquería"). Si la renombrás a otra cosa, el aviso deja de aparecer.
+  - Borrar una categoría moviendo sus gastos son dos pasos, no es atómico.
+    Si el segundo falla, los gastos quedan movidos y la categoría sigue.
+  - Los presupuestos comparan contra "mi parte", no contra lo que pagaste.
+  - La PWA no tiene modo sin conexión (a propósito, por ser una app privada).
+  - El CSV exporta solo gastos, no ingresos.
+  - Los límites de largo de campos que no estaban en CLAUDE.md los elegí yo
+    (cliente de ingreso 80 caracteres, nombre de gasto fijo 60).

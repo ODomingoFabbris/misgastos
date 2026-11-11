@@ -34,8 +34,8 @@ Sin ORM: se consulta con el cliente de Supabase. Mutaciones con Server Actions. 
 Archivo `.env.local` (nunca en Git; `.env.example` sin valores sí va en el repo):
 
 ```
-NEXT_PUBLIC_SUPABASE_URL=
-NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY=
+SUPABASE_URL=
+SUPABASE_PUBLISHABLE_KEY=
 ```
 
 - La Publishable key es segura en el navegador porque la protección real son las reglas por fila (RLS) de la base.
